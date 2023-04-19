@@ -36,8 +36,8 @@ def get_statistics(params):
     return resp
 
 def _get_pagination_info(params, cnt):
-    limit = params['limit']
-    page = params['page']
+    limit = params.get('limit', 5)
+    page = params.get('page', 1)
     
     pagination_info = dict(
         count=cnt,

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from marshmallow import Schema, fields, ValidationError, validates_schema, post_load
+from marshmallow import Schema, fields, ValidationError, post_load
 from marshmallow.validate import Range, Validator
 
 
@@ -19,13 +19,13 @@ class DateValidator(Validator):
             datetime.strptime(value, self.format)
         except Exception as ex:
 
-            raise ValidationError("{} is not in the form of {}".format(value,))
+            raise ValidationError(self.default_error_message + ': ' + str(value))
         
         return value
 
 
 class FinancialDataRequestSchema(Schema):
-    symbol = fields.Str(load_default=None)
+    symbol = fields.Str(load_default=None, validate=lambda x: x in ['IBM', 'AAPL'])
     start_date = fields.Str(required=False, load_default=None, validate=DateValidator())
     end_date = fields.Str(required=False, load_default=None, validate=DateValidator())
     page = fields.Int(load_default=1, validate=Range(min=1))
@@ -39,7 +39,7 @@ class FinancialDataRequestSchema(Schema):
         return data
 
 class StatisticsRequestSchema(Schema):
-    symbol = fields.Str(required=True)
+    symbol = fields.Str(required=True, )
     start_date = fields.Str(validate=DateValidator(required=True))
     end_date = fields.Str(validate=DateValidator(required=True))
 
