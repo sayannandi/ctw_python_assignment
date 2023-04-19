@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+  ctw-db:
+    restart: always
+    image: mysql:8.0.33
+    container_name: ctw-db
+    env_file:
+      - .env
+    ports:
+      - 127.0.0.1:3306:3306
+    volumes:
+      - persisted-data:/var/lib/mysql
+      - ./src/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: mysqladmin ping -h localhost -u root
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  ctw-app:
+    build: .
+    restart: always
+    container_name: ctw-app
+    depends_on:
+      ctw-db:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:5000:8000
+    command: sh -c "python3 src/get_raw_data.py && uvicorn src.financial.main:app --host=0.0.0.0"
+    env_file:
+      - .env
+
+volumes:
+  persisted-data:
